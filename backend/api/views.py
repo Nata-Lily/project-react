@@ -54,7 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def send_message(ingredients):
-        shopping_list = 'Купить в магазине:'
+        shopping_list = 'Что купить в магазине:'
         for ingredient in ingredients:
             shopping_list += (
                 f"\n{ingredient['ingredient__name']} "

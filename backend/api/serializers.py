@@ -17,8 +17,14 @@ class UserSerializer(DjoserUserSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', )
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+        )
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
@@ -32,8 +38,12 @@ class UserCreateSerializer(DjoserUserCreateSerializer):
     class Meta:
         model = User
         fields = (
-            'email', 'username', 'first_name',
-            'last_name', 'password')
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        )
 
 
 class SubscribeListSerializer(DjoserUserSerializer):
@@ -124,10 +134,18 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients',
-                  'is_favorited', 'is_in_shopping_cart',
-                  'name', 'image', 'text', 'cooking_time'
-                  )
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time'
+        )
 
     def get_ingredients(self, obj):
         ingredients = IngredientRecipe.objects.filter(recipe=obj)
@@ -162,8 +180,15 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            'id', 'tags', 'author', 'ingredients',
-            'name', 'image', 'text', 'cooking_time',)
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
+        )
 
     def validate_tags(self, tags):
         for tag in tags:
