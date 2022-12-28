@@ -19,6 +19,7 @@ class AddDelViewMixin:
 
         menegers = {
             'shopping_cart': user.shopping_list,
+            'favorites': user.favorite,
         }
         meneger = menegers[meneger]
 

@@ -9,18 +9,15 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
-from .mixins import AddDelViewMixin
 from administration.models import Ingredient, Tag
 from cook.models import IngredientRecipe, Recipe
 from Users.models import Follow, User
-from print.models import Favorite
-
 from .filters import IngredientFilter, RecipeFilter
+from .mixins import AddDelViewMixin
 from .pagination import CustomPagination
 from .permissions import AuthorPermission
-from .serializers import (CreateRecipeSerializer, FavoriteSerializer,
-                          IngredientSerializer, RecipeReadSerializer,
-                          SubscribeListSerializer,
+from .serializers import (CreateRecipeSerializer, IngredientSerializer,
+                          RecipeReadSerializer, SubscribeListSerializer,
                           TagSerializer, UserSerializer)
 
 
@@ -54,13 +51,13 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDelViewMixin):
         return CreateRecipeSerializer
 
     @staticmethod
-    def txt_file(ingredients):
+    def get_txt_file(ingredients):
         shopping_list = 'Что купить в магазине:'
         for ingredient in ingredients:
             shopping_list += (
                 f"\n{ingredient['ingredient__name']} "
                 f"({ingredient['ingredient__measurement_unit']}) - "
-                f"{ingredient['amount']}")
+                f"{ingredient['sum_amount']}")
         file = 'shopping_list.txt'
         response = HttpResponse(shopping_list, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename="{file}.txt"'
@@ -87,25 +84,7 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDelViewMixin):
         methods=('POST',),
         permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
-        context = {"request": request}
-        recipe = get_object_or_404(Recipe, id=pk)
-        data = {
-            'user': request.user.id,
-            'recipe': recipe.id
-        }
-        serializer = FavoriteSerializer(data=data, context=context)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @favorite.mapping.delete
-    def destroy_favorite(self, request, pk):
-        get_object_or_404(
-            Favorite,
-            user=request.user,
-            recipe=get_object_or_404(Recipe, id=pk)
-        ).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.add_del_obj(pk, 'favorites')
 
 
 class UserViewSet(DjoserUserViewSet):
