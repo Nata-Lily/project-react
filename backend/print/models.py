@@ -1,7 +1,6 @@
+from cook.models import Recipe
 from django.db import models
 from django.db.models import UniqueConstraint
-
-from cook.models import Recipe
 from Users.models import User
 
 

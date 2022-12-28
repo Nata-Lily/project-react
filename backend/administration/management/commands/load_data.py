@@ -1,11 +1,10 @@
 import json
 import os
 
+from administration.models import Ingredient
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.utils import IntegrityError
-
-from administration.models import Ingredient
 
 DATA_ROOT = os.path.join(settings.BASE_DIR, 'data')
 
