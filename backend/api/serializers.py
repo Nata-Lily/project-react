@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
-from djoser.serializers import UserSerializer as DjoserUserSerializer
 from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
+from djoser.serializers import UserSerializer as DjoserUserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
@@ -147,10 +147,6 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             'cooking_time'
         )
 
-    def get_ingredients(self, obj):
-        ingredients = IngredientRecipe.objects.filter(recipe=obj)
-        return IngredientRecipeSerializer(ingredients, many=True).data
-
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
@@ -207,11 +203,11 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         ingredients_list = []
         if not ingredients:
             raise serializers.ValidationError(
-                'Отсутствуют ингридиенты')
+                'Отсутствуют ингредиенты')
         for ingredient in ingredients:
             if ingredient['id'] in ingredients_list:
                 raise serializers.ValidationError(
-                    'Ингридиенты должны быть уникальны')
+                    'Ингредиенты должны быть уникальны')
             ingredients_list.append(ingredient['id'])
             if int(ingredient.get('amount')) < 1:
                 raise serializers.ValidationError(
@@ -232,7 +228,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         IngredientRecipe.objects.bulk_create(ingredient_liist)
 
     def create(self, validated_data):
-        request = self.context.get('request', None)
+        request = self.context.get('request')
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(author=request.user, **validated_data)

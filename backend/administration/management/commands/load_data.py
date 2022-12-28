@@ -4,8 +4,8 @@ import os
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.utils import IntegrityError
-from administration.models import Ingredient
 
+from administration.models import Ingredient
 
 DATA_ROOT = os.path.join(settings.BASE_DIR, 'data')
 
@@ -28,9 +28,11 @@ class Command(BaseCommand):
                                                   measurement_unit=ingredient[
                                                       "measurement_unit"])
                     except IntegrityError:
-                        print(f'Ингридиет {Ingredient["Название ингредиента"]}'
-                              f'{Ingredient["Единица иземерения"]} '
-                              f'уже есть в базе')
+                        print(
+                            f'Ингредиент {Ingredient["Название ингредиента"]}'
+                            f'{Ingredient["Единица иземерения"]} '
+                            f'уже есть в базе'
+                        )
 
         except FileNotFoundError:
             raise CommandError('Файл отсутствует в директории data')

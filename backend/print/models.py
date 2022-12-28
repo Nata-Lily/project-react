@@ -1,15 +1,8 @@
 from django.db import models
 from django.db.models import UniqueConstraint
-from administration.models import Ingredient
-from Users.models import User
+
 from cook.models import Recipe
-
-
-class ShoppingCartRecipe(models.Model):
-    ingredient = models.ForeignKey(
-        to=Ingredient,
-        on_delete=models.CASCADE,
-    )
+from Users.models import User
 
 
 class FavoriteShoppingCart(models.Model):

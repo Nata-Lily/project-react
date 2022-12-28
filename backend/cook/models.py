@@ -1,6 +1,8 @@
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
+
 from administration.models import Ingredient, Tag
+
 User = get_user_model()
 
 
@@ -36,7 +38,7 @@ class Recipe(models.Model):
     slug = models.SlugField(unique=True)
     ingredients = models.ManyToManyField(
         Ingredient,
-        verbose_name='Ингридиенты',
+        verbose_name='Ингредиенты',
         through='Ingredientrecipe'
     )
     tags = models.ManyToManyField(
