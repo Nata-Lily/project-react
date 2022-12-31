@@ -9,7 +9,7 @@ services:
       - .env
 
   backend:
-    image: natalily86/foodgram_backend
+    build: ../backend/
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
@@ -21,7 +21,9 @@ services:
     container_name: foodgram_backend
 
   frontend:
-    image: pashkavrn/foodgram_frontend
+    build: 
+      context: ../frontend 
+      dockerfile: Dockerfile 
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
