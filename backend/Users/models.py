@@ -5,7 +5,6 @@ from django.db.models import F, Q, UniqueConstraint
 
 
 class User(AbstractUser):
-    """ Модель пользователя. """
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username', 'first_name', 'last_name', )
     first_name = models.CharField(
@@ -38,7 +37,6 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
-    """ Модель подписки на автора. """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

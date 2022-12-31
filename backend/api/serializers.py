@@ -1,19 +1,17 @@
 from administration.models import Ingredient, Tag
 from cook.models import IngredientRecipe, Recipe
 from django.shortcuts import get_object_or_404
-from djoser.serializers import (
-    UserCreateSerializer as DjoserUserCreateSerializer
-)
-from djoser.serializers import UserSerializer as DjoserUserSerializer
+from djoser.serializers import UserCreateSerializer 
+from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from print.models import Favorite, ShoppingCart
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
-from Users.models import User
+from users.models import User
 
 
-class UserSerializer(DjoserUserSerializer):
+class UserSerializer(UserSerializer):
     is_subscribed = SerializerMethodField(read_only=True)
 
     class Meta:
@@ -34,7 +32,7 @@ class UserSerializer(DjoserUserSerializer):
         return obj.following.filter(user=request.user).exists()
 
 
-class UserCreateSerializer(DjoserUserCreateSerializer):
+class UserCreateSerializer(UserCreateSerializer):
 
     class Meta:
         model = User
@@ -47,7 +45,7 @@ class UserCreateSerializer(DjoserUserCreateSerializer):
         )
 
 
-class SubscribeListSerializer(DjoserUserSerializer):
+class SubscribeListSerializer(UserSerializer):
     recipes_count = SerializerMethodField()
     recipes = SerializerMethodField()
 

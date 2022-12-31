@@ -4,20 +4,21 @@ from django.db.models import Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet as DjoserUserViewSet
+from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
-from Users.models import Follow, User
+from users.models import Follow, User
+from print.models import Favorite, ShoppingCart
 
 from .filters import IngredientFilter, RecipeFilter
-from .mixins import AddDelViewMixin
 from .pagination import CustomPagination
 from .permissions import AuthorPermission
-from .serializers import (CreateRecipeSerializer, IngredientSerializer,
-                          RecipeReadSerializer, SubscribeListSerializer,
+from .serializers import (CreateRecipeSerializer, FavoriteSerializer,
+                          IngredientSerializer, RecipeReadSerializer,
+                          ShoppingCartSerializer, SubscribeListSerializer,
                           TagSerializer, UserSerializer)
 
 
@@ -37,7 +38,7 @@ class TagViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
 
-class RecipeViewSet(viewsets.ModelViewSet, AddDelViewMixin):
+class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = CreateRecipeSerializer
     permission_classes = (AuthorPermission, )
@@ -57,7 +58,7 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDelViewMixin):
             shopping_list += (
                 f"\n{ingredient['ingredient__name']} "
                 f"({ingredient['ingredient__measurement_unit']}) - "
-                f"{ingredient['sum_amount']}")
+                f"{ingredient['amount']}")
         file = 'shopping_list.txt'
         response = HttpResponse(shopping_list, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename="{file}.txt"'
@@ -69,25 +70,61 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDelViewMixin):
             recipe__shopping_list__user=request.user
         ).order_by('ingredient__name').values(
             'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(sum_amount=Sum('amount'))
-        return self.txt_file(ingredients)
+        ).annotate(amount=Sum('amount'))
+        return self.get_txt_file(ingredients)
 
     @action(
         detail=True,
         methods=('POST',),
         permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
-        return self.add_del_obj(pk, 'shopping_cart')
+        context = {'request': request}
+        recipe = get_object_or_404(Recipe, id=pk)
+        data = {
+            'user': request.user.id,
+            'recipe': recipe.id
+        }
+        serializer = ShoppingCartSerializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @shopping_cart.mapping.delete
+    def destroy_shopping_cart(self, request, pk):
+        get_object_or_404(
+            ShoppingCart,
+            user=request.user.id,
+            recipe=get_object_or_404(Recipe, id=pk)
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
         methods=('POST',),
         permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
-        return self.add_del_obj(pk, 'favorites')
+        context = {"request": request}
+        recipe = get_object_or_404(Recipe, id=pk)
+        data = {
+            'user': request.user.id,
+            'recipe': recipe.id
+        }
+        serializer = FavoriteSerializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @favorite.mapping.delete
+    def destroy_favorite(self, request, pk):
+        get_object_or_404(
+            Favorite,
+            user=request.user,
+            recipe=get_object_or_404(Recipe, id=pk)
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserViewSet(DjoserUserViewSet):
+class UserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = CustomPagination
@@ -102,13 +139,18 @@ class UserViewSet(DjoserUserViewSet):
         author = get_object_or_404(User, pk=id)
 
         if request.method == 'POST':
+            data = {
+                "email": 'geo86@example.com',
+                "username": 'bar',
+                "first_name": 'foobar',
+                "last_name": 'barfoo',
+            }
             serializer = SubscribeListSerializer(
-                author, data=request.data, context={'request': request}
+                author, data=data, context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             Follow.objects.create(user=user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
         if request.method == 'DELETE':
             get_object_or_404(
                 Follow, user=user, author=author

@@ -1,7 +1,7 @@
 from cook.models import Recipe
 from django.db import models
 from django.db.models import UniqueConstraint
-from Users.models import User
+from users.models import User
 
 
 class FavoriteShoppingCart(models.Model):
