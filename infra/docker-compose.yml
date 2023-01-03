@@ -9,7 +9,12 @@ services:
       - .env
 
   backend:
-    build: ../backend/
+    image: natalily86/infra-backend:latest
+    restart: always
+    command: >
+      bash -c "python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn --bind 0:8000 foodgram.wsgi"
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
@@ -21,11 +26,7 @@ services:
     container_name: foodgram_backend
 
   frontend:
-    build: 
-      context: ../frontend 
-      dockerfile: Dockerfile 
-    volumes:
-      - ../frontend/:/app/result_build/
+    image: natalily86/infra-frontend:latest
     depends_on:
       - db
     container_name: foodgram_frontend

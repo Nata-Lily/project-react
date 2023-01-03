@@ -6,7 +6,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='YANDEX')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='*')
 
 AUTH_USER_MODEL = 'users.User'
 
