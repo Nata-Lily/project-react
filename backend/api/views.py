@@ -1,5 +1,3 @@
-from administration.models import Ingredient, Tag
-from cook.models import IngredientRecipe, Recipe
 from django.db.models import Sum
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -11,6 +9,8 @@ from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
+from administration.models import Ingredient, Tag
+from cook.models import IngredientRecipe, Recipe
 from users.models import Follow, User
 from print.models import Favorite, ShoppingCart
 

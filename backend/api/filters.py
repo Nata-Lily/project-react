@@ -1,7 +1,8 @@
-from administration.models import Ingredient, Tag
-from cook.models import Recipe
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework.filters import SearchFilter
+
+from administration.models import Ingredient, Tag
+from cook.models import Recipe
 
 
 class IngredientFilter(SearchFilter):
