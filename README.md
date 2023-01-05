@@ -1,15 +1,11 @@
 # Проект Foodgram
 ## Учетная запись администратора:
 
-```
 [адресу](http://158.160.5.13/admin/)
 - логин: admin
 - почта:dandelion86@mail.ru 
 - пароль: admin
-```
 
-
-[![example workflow](https://github.com/Nata-Lily/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)  
   
 [![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
