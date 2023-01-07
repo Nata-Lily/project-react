@@ -2,9 +2,9 @@
 ## Учетная запись администратора:
 
 [кабинет доступен по адресу](http://158.160.5.13/admin/)
-- логин: admin
+- логин: nata
 - почта:dandelion86@mail.ru 
-- пароль: admin
+- пароль: qazwsx86
 
   
 [![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org/)
