@@ -52,6 +52,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return CreateRecipeSerializer
 
+    def perform_update(self, serializer):
+        serializer.save()
+
     @staticmethod
     def get_txt_file(ingredients):
         shopping_list = 'Что купить в магазине:'
