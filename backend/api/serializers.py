@@ -109,24 +109,26 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
-    # id = serializers.PrimaryKeyRelatedField(
-    #    queryset=Ingredient.objects.all()
-    # )
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        source='ingredient'
+    )
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
     )
-    amount = serializers.IntegerField(source='ingredientrecipe.amount')
 
     class Meta:
-        model = Ingredient
+        model = IngredientRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount',)
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
     tags = TagSerializer(read_only=False, many=True)
     author = UserSerializer(read_only=True, many=False)
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientRecipeSerializer(
+        many=True,
+        source='ingredienttorecipe')
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField(max_length=None)
@@ -160,7 +162,9 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientRecipeSerializer(
+        many=True,
+    )
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Tag.objects.all(),
@@ -213,16 +217,13 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def create_ingredients(recipe, ingredients):
-        ingredient_liist = []
-        for ingredient_data in ingredients:
-            ingredient_liist.append(
-                IngredientRecipe(
-                    ingredient=ingredient_data.pop('id'),
-                    amount=ingredient_data.pop('amount'),
-                    recipe=recipe,
-                )
-            )
-        IngredientRecipe.objects.bulk_create(ingredient_liist)
+        IngredientRecipe.objects.bulk_create([
+            IngredientRecipe(
+                recipe=recipe,
+                amount=ingredient['amount'],
+                ingredient=ingredient['ingredient'],
+            ) for ingredient in ingredients
+        ])
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -233,13 +234,20 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         self.create_ingredients(recipe, ingredients)
         return recipe
 
-    def update(self, instance, validated_data):
-        instance.tags.clear()
-        IngredientRecipe.objects.filter(recipe=instance).delete()
-        instance.tags.set(validated_data.pop('tags'))
-        ingredients = validated_data.pop('ingredients')
-        self.create_ingredients(instance, ingredients)
-        return super().update(instance, validated_data)
+    def update(self, recipe, validated_data):
+        tags = validated_data.get('tags')
+        ingredients = validated_data.get('ingredients')
+
+        if tags:
+            recipe.tags.clear()
+            recipe.tags.set(tags)
+
+        if ingredients:
+            recipe.ingredients.clear()
+            self.create_ingredients(recipe, ingredients)
+
+        IngredientRecipe.objects.filter(recipe=recipe).delete()
+        return super().update(recipe, validated_data)
 
     def to_representation(self, instance):
         return RecipeReadSerializer(instance, context={
