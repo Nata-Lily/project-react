@@ -1,4 +1,3 @@
-from django.db.models import F
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer
 from djoser.serializers import UserSerializer
