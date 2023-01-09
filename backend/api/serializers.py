@@ -200,11 +200,20 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                 'Время готовки должно быть не меньше одной минуты')
         return cooking_time
 
-    @staticmethod
-    def get_ingredients(obj):
-        return obj.ingredients.values(
-            'id', 'name', 'measurement_unit', amount=F('recipe__amount')
-        )
+    def validate_ingredients(self, ingredients):
+        ingredients_list = []
+        if not ingredients:
+            raise serializers.ValidationError(
+                'Отсутствуют ингредиенты')
+        for ingredient in ingredients:
+            if ingredient['id'] in ingredients_list:
+                raise serializers.ValidationError(
+                    'Ингредиенты должны быть уникальны')
+            ingredients_list.append(ingredient['id'])
+            if int(ingredient.get('amount')) < 1:
+                raise serializers.ValidationError(
+                    'Количество ингредиента больше 0')
+        return ingredients
 
     @staticmethod
     def create_ingredients(recipe, ingredients):
@@ -228,29 +237,13 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         self.create_ingredients(recipe, ingredients)
         return recipe
 
-    def update(self, recipe, validated_data):
-        tags = validated_data.get('tags')
-        ingredients = validated_data.get('ingredients')
-
-        recipe.image = validated_data.get(
-            'image', recipe.image)
-        recipe.name = validated_data.get(
-            'name', recipe.name)
-        recipe.text = validated_data.get(
-            'text', recipe.text)
-        recipe.cooking_time = validated_data.get(
-            'cooking_time', recipe.cooking_time)
-
-        if tags:
-            recipe.tags.clear()
-            recipe.tags.set(tags)
-
-        if ingredients:
-            recipe.ingredients.clear()
-            self.create_ingredients(recipe, ingredients)
-
-        recipe.save()
-        return recipe
+    def update(self, instance, validated_data):
+        instance.tags.clear()
+        IngredientRecipe.objects.filter(recipe=instance).delete()
+        instance.tags.set(validated_data.pop('tags'))
+        ingredients = validated_data.pop('ingredients')
+        self.create_ingredients(instance, ingredients)
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         return RecipeReadSerializer(instance, context={
