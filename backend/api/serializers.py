@@ -162,15 +162,15 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
-    ingredients = IngredientRecipeSerializer(many=True)
-    tags = serializers.PrimaryKeyRelatedField(
-        many=True,
+    tags = serializers.SlugRelatedField(
+        slug_field="id",
         queryset=Tag.objects.all(),
-        error_messages={'does_not_exist': 'Указанного тега не существует'}
+        many=True,
+        required=True
     )
-    image = Base64ImageField(max_length=None)
-    author = UserSerializer(read_only=True)
-    cooking_time = serializers.IntegerField()
+
+    ingredients = IngredientRecipeSerializer(many=True)
+    image = Base64ImageField(required=True)
 
     class Meta:
         model = Recipe

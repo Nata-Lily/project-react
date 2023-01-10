@@ -41,16 +41,19 @@ class TagViewSet(viewsets.ModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = CreateRecipeSerializer
+    serializer_class = RecipeReadSerializer
     permission_classes = (AuthorPermission, )
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend, )
     filterset_class = RecipeFilter
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
     def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return RecipeReadSerializer
-        return CreateRecipeSerializer
+        if self.request.method in ['POST', 'PUT', 'PATCH']:
+            return CreateRecipeSerializer
+        return RecipeReadSerializer
 
     @staticmethod
     def get_txt_file(ingredients):
