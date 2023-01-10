@@ -102,19 +102,17 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    amount = serializers.ReadOnlyField(source='ingredientrecipe.amount')
+    id = serializers.ReadOnlyField()
+    name = serializers.ReadOnlyField()
+    measurement_unit = serializers.ReadOnlyField()
 
     class Meta:
-        model = Ingredient
-        fields = ('id', 'name', 'measurement_unit', 'amount')
-        read_only_fields = ['name', 'measurement_unit', ]
+        model = IngredientRecipe
+        fields = ("id", "name", "measurement_unit")
 
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all(),
-        source='ingredient'
-    )
+    id = serializers.IntegerField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
@@ -123,19 +121,6 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount',)
-
-
-class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all(),
-        source='ingredient')
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit')
-
-    class Meta:
-        model = IngredientRecipe
-        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
@@ -177,9 +162,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
-    ingredients = CreateRecipeIngredientSerializer(
-        many=True,
-    )
+    ingredients = IngredientRecipeSerializer(many=True)
     tags = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=Tag.objects.all(),

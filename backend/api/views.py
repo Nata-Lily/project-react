@@ -54,7 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def get_txt_file(ingredients):
-        shopping_list = 'Что купить в магазинее:'
+        shopping_list = 'Что купить в магазинееее:'
         for ingredient in ingredients:
             shopping_list += (
                 f"\n{ingredient['ingredient__name']} "
