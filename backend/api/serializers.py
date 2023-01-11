@@ -185,12 +185,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def to_representation(self, instance):
-        serializer = RecipeReadSerializer(instance, context={
-            'request': self.context.get('request'),
-        })
-        return serializer.data
-
     def validate_tags(self, tags):
         for tag in tags:
             if not Tag.objects.filter(id=tag.id).exists():
@@ -234,13 +228,11 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def create(self, validated_data):
-        request = self.context.get('request')
-        tags = validated_data.pop('tags')
+        tags = validated_data.pop("tags")
         ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(author=request.user, **validated_data)
+        recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        self.create_ingredients(recipe, ingredients)
-        return recipe
+        return self.create_ingredients(ingredients, recipe)
 
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags')
@@ -251,6 +243,11 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         instance.ingredients.clear()
         self.create_ingredients(ingredients, recipe=instance)
         return instance
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeReadSerializer(instance, context=context).data
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
