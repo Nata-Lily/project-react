@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "FOODGRAM-PROJECT-REACT",
+            "python":: "C:\\Dev\\foodgram-project-react\\backend\\venv\\Scripts\\python",
+            "type":"python",
+            "request": "launch",
+            "program": "C:\\Dev\\foodgram-project-react\\backend\\manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true,
+            "justMyCode": true
+        },
+        {
+            "name": "Python: File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "justMyCode": true
+        }
+    ]
+}

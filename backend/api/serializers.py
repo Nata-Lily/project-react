@@ -185,6 +185,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time',
         )
+        read_only_fields = ('author',)
 
     def validate_ingredients(self, value):
         """Валидация поля ингредиентов при создании рецепта"""
