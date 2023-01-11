@@ -185,33 +185,33 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def validate_tags(self, tags):
-        for tag in tags:
-            if not Tag.objects.filter(id=tag.id).exists():
-                raise serializers.ValidationError(
-                    'Указанного тега не существует')
-        return tags
-
-    def validate_cooking_time(self, cooking_time):
-        if cooking_time < 1:
+    def validate_ingredients(self, value):
+        """Валидация поля ингредиентов при создании рецепта"""
+        if not value:
             raise serializers.ValidationError(
-                'Время готовки должно быть не меньше одной минуты')
-        return cooking_time
+                'Необходимо указать как минимум один ингредиент'
+            )
+        ingredients_id_list = []
+        for item in value:
+            if item['amount'] == 0:
+                raise serializers.ValidationError(
+                    'Количество ингредиента не может быть равным нулю'
+                )
+            ingredient_id = item['ingredient']['id']
+            if ingredient_id in ingredients_id_list:
+                raise serializers.ValidationError(
+                    'Указано несколько одинаковых ингредиентов'
+                )
+            ingredients_id_list.append(ingredient_id)
+        return value
 
-    def validate_ingredients(self, ingredients):
-        ingredients_list = []
-        if not ingredients:
+    def validate_tags(self, value):
+        """Валидаци поля тегов при создании рецепта"""
+        if not value:
             raise serializers.ValidationError(
-                'Отсутствуют ингредиенты')
-        for ingredient in ingredients:
-            if ingredient['id'] in ingredients_list:
-                raise serializers.ValidationError(
-                    'Ингредиенты должны быть уникальны')
-            ingredients_list.append(ingredient['id'])
-            if int(ingredient.get('amount')) < 1:
-                raise serializers.ValidationError(
-                    'Количество ингредиента больше 0')
-        return ingredients
+                'Необходимо указать как минимум один тег'
+            )
+        return value
 
     def create_ingredients(self, recipe, ingredients):
         for ingredient in ingredients:
