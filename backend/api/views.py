@@ -1,35 +1,27 @@
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
-from api.pagination import CustomPagination
 from users.models import Follow, User
-from api.serializers import (CustomUserCreateSerializer,
-                             CustomUserSerializer, SubscribeSerializer)
-
-from cook.models import (IngredientRecipe, Recipe)
-from administration.models import (Ingredient, Tag)
-from print.models import ShoppingCart, Favorite
-from cook.models import (IngredientRecipe, Recipe)
+from cook.models import IngredientRecipe, Recipe
+from administration.models import Ingredient, Tag
+from api.pagination import CustomPagination
+from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipePostSerializer, RecipeSerializer,
-                             ShoppingCartSerializer, TagSerializer)
-from users.models import User
+                             ShoppingCartSerializer, TagSerializer,
+                             SubscribeListSerializer, UserSerializer)
+from print.models import Favorite, ShoppingCart
+
 from .pagination import CustomPagination
-from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import RecipeFilter, IngredientSearchFilter
 
 
@@ -52,7 +44,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def get_txt_file(ingredients):
-        shopping_list = 'Что купить в магазине ПРЕВЕД:'
+        shopping_list = 'Что купить в магазине:'
         for ingredient in ingredients:
             shopping_list += (
                 f"\n{ingredient['ingredient__name']} "
@@ -141,48 +133,45 @@ class IngredientViewSet(mixins.RetrieveModelMixin,
     search_fields = ('^name',)
 
 
-class CustomUserViewSet(UserViewSet):
+class UserViewSet(UserViewSet):
     queryset = User.objects.all()
-    serializer_class = CustomUserSerializer
+    serializer_class = UserSerializer
     pagination_class = CustomPagination
 
-    def get_queryset(self):
-        return User.objects.all()
-
-    def get_serializer_class(self):
-        if self.request.method in ['POST', 'PUT', 'PATCH']:
-            return CustomUserCreateSerializer
-        return CustomUserSerializer
-
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=[IsAuthenticated])
-    def subscribe(self, request, **kwargs):
-        """Метод для подписки/отписки на авторов"""
-        user = get_object_or_404(User, username=request.user)
-        author = get_object_or_404(User, id=self.kwargs.get('id'))
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated],
+    )
+    def subscribe(self, request, id):
+        user = request.user
+        author = get_object_or_404(User, pk=id)
 
         if request.method == 'POST':
-            serializer = SubscribeSerializer(
-                author, data=request.data, context={'request': request}
+            data = {
+                "email": 'geo86@example.com',
+                "username": 'bar',
+                "first_name": 'foobar',
+                "last_name": 'barfoo',
+            }
+            serializer = SubscribeListSerializer(
+                author, data=data, context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             Follow.objects.create(user=user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
         if request.method == 'DELETE':
-            subscription = get_object_or_404(
+            get_object_or_404(
                 Follow, user=user, author=author
-            )
-            subscription.delete()
+            ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
-        """Метод для просмотра своих подписок"""
         user = request.user
         queryset = User.objects.filter(following__user=user)
         pages = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(
+        serializer = SubscribeListSerializer(
             pages, many=True, context={'request': request}
         )
         return self.get_paginated_response(serializer.data)
