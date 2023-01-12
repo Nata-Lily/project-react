@@ -13,6 +13,10 @@ class IngredientFilter(SearchFilter):
         fields = ('name',)
 
 
+class IngredientSearchFilter(SearchFilter):
+    search_param = 'name'
+
+
 class RecipeFilter(FilterSet):
     tags = filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
