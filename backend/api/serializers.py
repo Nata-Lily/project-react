@@ -113,9 +113,10 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientRecipe
-        fields = ("id",
-                  "name",
-                  "measurement_unit"
+        fields = (
+            "id",
+            "name",
+            "measurement_unit",
         )
 
 
@@ -128,10 +129,11 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientRecipe
-        fields = ('id',
-                  'name',
-                  'measurement_unit',
-                  'amount',
+        fields = (
+            'id',
+            'name',
+            'measurement_unit',
+            'amount',
         )
 
 
@@ -139,10 +141,10 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = (
-                  'id',
-                  'name',
-                  "color",
-                  'slug',
+            'id',
+            'name',
+            "color",
+            'slug',
         )
 
 
@@ -264,6 +266,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         context = {'request': request}
         return RecipeSerializer(instance, context=context).data
+
 
 class RecipeShortSerializer(serializers.ModelSerializer):
 
