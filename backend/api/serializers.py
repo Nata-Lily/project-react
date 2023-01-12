@@ -7,6 +7,7 @@ from api.fields import Base64ImageField
 from cook.models import (IngredientRecipe, Recipe)
 from administration.models import (Ingredient, Tag)
 from cook.models import (IngredientRecipe, Recipe)
+from print.models import FavoriteShoppingCart, ShoppingCart
 
 
 from users.models import Follow, User
@@ -268,7 +269,9 @@ class FavoriteSerializer(RecipeSerializer):
     def validate(self, data):
         recipe = self.instance
         user = self.context.get('request').user
-        if Favorite.objects.filter(recipe=recipe, user=user).exists():
+        if FavoriteShoppingCart.objects.filter(
+            recipe=recipe, user=user
+        ).exists():
             raise serializers.ValidationError(
                 detail='Рецепт уже добавлен в избранное',
                 code=status.HTTP_400_BAD_REQUEST,

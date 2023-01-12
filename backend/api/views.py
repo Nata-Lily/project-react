@@ -19,19 +19,20 @@ from rest_framework.response import Response
 from api.pagination import CustomPagination
 from users.models import Follow, User
 from api.serializers import (CustomUserCreateSerializer,
-                               CustomUserSerializer, SubscribeSerializer)
+                            CustomUserSerializer, SubscribeSerializer)
 
-from api.fields import Base64ImageField
 from cook.models import (IngredientRecipe, Recipe)
 from administration.models import (Ingredient, Tag)
+from print.models import ShoppingCart, FavoriteShoppingCart
 from cook.models import (IngredientRecipe, Recipe)
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
-                                 RecipePostSerializer, RecipeSerializer,
-                                 ShoppingCartSerializer, TagSerializer)
+    RecipePostSerializer, RecipeSerializer,
+    ShoppingCartSerializer, TagSerializer)
 from users.models import User
 from .pagination import CustomPagination
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import RecipeFilter, IngredientSearchFilter
+
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
@@ -77,7 +78,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return self._create_delete(
             request,
             serializer=FavoriteSerializer,
-            model=Favorite
+            model=FavoriteShoppingCart
         )
 
     @action(detail=True, methods=['post', 'delete'],
