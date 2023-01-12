@@ -168,8 +168,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def get_is_favorited(self, obj):
-        """Проверяет добавлен ли рецепт в избранное
-        у авторизованного пользователя"""
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
@@ -202,7 +200,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def validate_ingredients(self, value):
-        """Валидация поля ингредиентов при создании рецепта"""
         if not value:
             raise serializers.ValidationError(
                 'Необходимо указать как минимум один ингредиент'
@@ -222,7 +219,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return value
 
     def validate_tags(self, value):
-        """Валидаци поля тегов при создании рецепта"""
         if not value:
             raise serializers.ValidationError(
                 'Необходимо указать как минимум один тег'
@@ -230,8 +226,6 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return value
 
     def _create_ingredient_recipe_objects(self, ingredients, recipe):
-        """Вспомогательный метод для создания
-        объектов модели IngredientRecipe"""
         for ingredient in ingredients:
             ingredient_amount = ingredient.pop("amount")
             ingredient_obj = get_object_or_404(
